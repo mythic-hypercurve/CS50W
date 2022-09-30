@@ -1,25 +1,24 @@
 from http.client import HTTPResponse
 from django.shortcuts import render
-import markdown
+from markdown2 import Markdown
 
 from . import util
-
-def markdownToHtml(entry):
-    content = util.get_entry(entry)
-    markdowner = markdown.Markdown()
-    if content == None:
-        return None
-    else:    
-        return markdowner.convert(entry)
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries()
     })
 
-def page(request, entry):
-    contentHtml = markdownToHtml(entry)
-    if contentHtml == None:
-        return render(request, "encyclopedia/error.html")
+def entry(request, title):
+    entryMarkdown = util.get_entry(title)
+    if entryMarkdown != None:
+        entryHtml= Markdown().convert(entryMarkdown)
+        return render(request, "encyclopedia/entry.html", {
+            "title": title,
+            "entry": entryHtml 
+        })  
     else:
-        return render(request, "encyclopedia/entry.html")  
+        return render(request, "encyclopedia/error.html", {
+            "message": "The entry you are looking for does not exist"
+        })
+        
